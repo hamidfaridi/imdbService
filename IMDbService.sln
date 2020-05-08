@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30002.166
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "IMDbService", ".", "{E80C7A74-1FDA-4910-87E1-0E659DA9D749}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.8"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_61944"
+		Debug.AspNetCompiler.PhysicalPath = "..\IMDbService\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_61944\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_61944"
+		Release.AspNetCompiler.PhysicalPath = "..\IMDbService\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_61944\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "61944"
+		SlnRelativePath = "..\IMDbService\"
+		DefaultWebSiteLanguage = "Visual C#"
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E80C7A74-1FDA-4910-87E1-0E659DA9D749}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E80C7A74-1FDA-4910-87E1-0E659DA9D749}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {14C94BE6-0947-4F87-B68B-D439CBBFBC46}
+	EndGlobalSection
+EndGlobal
