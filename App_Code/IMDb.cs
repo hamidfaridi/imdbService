@@ -1,19 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IdentityModel;
-using System.Linq;
 using System.Net;
-using System.Security.Policy;
-using System.ServiceModel.Channels;
 using System.Text;
-using System.Web;
 
 /// <summary>
 /// Zusammenfassungsbeschreibung für IMDb
 /// </summary>
 public class IMDb
 {
+    string jsonData = string.Empty;
+
     private string _url = string.Empty;
+
     /// <summary>
     /// Default Constrauctor for IMDB class
     /// </summary>
@@ -31,23 +29,32 @@ public class IMDb
         }
 
         int index = 0;
-        string webPageUrl = string.Empty;
+        string webPageContent = string.Empty;
         string tempString = string.Empty;
+        string datePublished = string.Empty;
         string director = string.Empty;
+        string creator = string.Empty;
+        string name = string.Empty;
+        string titleType = string.Empty;
+        string description = string.Empty;
         string genre = string.Empty;
         string duration = string.Empty;
-        string star = string.Empty;
+        string durationDesc = string.Empty;
+        string actor = string.Empty;
         string rating = string.Empty;
         string rate = string.Empty;
+        string url = string.Empty;
         string posterUrl = string.Empty;
         string posterData = string.Empty;
+
+        string runTime = string.Empty;
 
         using (var client = new WebClient())
         {
             try
             {
                 client.Encoding = Encoding.UTF8;
-                webPageUrl = client.DownloadString(_url);
+                webPageContent = client.DownloadString(_url);
             }
             catch (Exception ex)
             {
@@ -59,94 +66,178 @@ public class IMDb
             }
         }
 
-        if (string.IsNullOrWhiteSpace(webPageUrl))
+        if (string.IsNullOrWhiteSpace(webPageContent))
+        {
+            return null;
+        }
+        else
+        {
+            if (webPageContent.IndexOf("<script type=\"application/ld+json\">") > 0)
+            {
+                jsonData =
+                    webPageContent.Substring(webPageContent.IndexOf("<script type=\"application/ld+json\">")
+                                               + "<script type=\"application/ld+json\">".Length,
+                                             webPageContent.Substring(webPageContent.IndexOf("<script type=\"application/ld+json\">")
+                                               + "<script type=\"application/ld+json\">".Length).IndexOf("</script"));
+
+                runTime = webPageContent.Substring(webPageContent.ToUpper().IndexOf("RUNTIME:"),
+                                   webPageContent.Substring(webPageContent.ToUpper().IndexOf("RUNTIME:")).ToUpper().IndexOf("</DIV>"));
+
+                webPageContent = string.Empty;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(jsonData))
         {
             return null;
         }
 
-        tempString = webPageUrl;
-
         //Get Poster Url
         try
         {
-            posterUrl = tempString.Substring(tempString.IndexOf(@"<div class=""poster"">") + tempString.Substring(tempString.IndexOf(@"<div class=""poster"">")).IndexOf("src=")).Remove(0, 5).Substring(0, tempString.Substring(tempString.IndexOf(@"<div class=""poster"">") + tempString.Substring(tempString.IndexOf(@"<div class=""poster"">")).IndexOf("src=")).Remove(0, 5).IndexOf(@""""));
+            posterUrl = jsonData.Substring(jsonData.IndexOf("\"image\":") + "\"image\":".Length, jsonData.Substring(jsonData.IndexOf("\"image\":") + "\"image\":".Length).IndexOf("\",")).Replace("\"", "").Trim();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            posterUrl = "None";
-        }
-
-        //GetDirector(s) info
-        index = tempString.IndexOf(@"Directors:");
-            //tempString.IndexOf(@"<h4 class=""inline"">Director:</h4>");
-
-        if (index > 0)
-        {
-            if (tempString.IndexOf(@"<h4 class=""inline"">Writer") > 0)
-            {
-                director = GetDirector(tempString.Substring(index, tempString.IndexOf(@"<h4 class=""inline"">Writer") - index));
-            }
-            else if (tempString.IndexOf(@"<h4 class=""inline"">Star") > 0)
-            {
-                director = GetDirector(tempString.Substring(index, tempString.IndexOf(@"<h4 class=""inline"">Star") - index));
-            }
-        }
-        else
-        {
-            index = tempString.IndexOf(@"Director:");
-            if (index > 0)
-            {
-                if (tempString.IndexOf(@"<h4 class=""inline"">Writer") > 0)
-                {
-                    director = GetDirector(tempString.Substring(index, tempString.IndexOf(@"<h4 class=""inline"">Writer") - index));
-                }
-                else if (tempString.IndexOf(@"<h4 class=""inline"">Star") > 0)
-                {
-                    director = GetDirector(tempString.Substring(index, tempString.IndexOf(@"<h4 class=""inline"">Star") - index));
-                }
-            }
+            posterUrl = "Poster url couldn't found.";
         }
 
         //GetGenre(s) info
         index = 0;
 
-        index = tempString.IndexOf(@"<span class=""itemprop"" itemprop=""genre"">");
+        index = jsonData.IndexOf("\"genre\":");
+
         if (index > 0)
         {
-            genre = GetGenre(tempString.Substring(index));
+            try
+            {
+                genre = GetList(jsonData.Substring(jsonData.IndexOf("\"genre\":") + "\"genre\":".Length, jsonData.Substring(jsonData.IndexOf("\"genre\":") + "\"genre\":".Length).IndexOf("]") + 1).Replace("[", "").Replace("]", "").Replace("\"", "").Replace("\n", "").Trim());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Cannot retrieve Genre");
+            }
+        }
+
+        //GetDatePublished
+        index = 0;
+
+        index = jsonData.IndexOf("\"datePublished\":");
+        if (index > 0)
+        {
+            datePublished = jsonData.Substring(index + "\"datePublished\":".Length, jsonData.Substring(index + "\"datePublished\":".Length).IndexOf(",")).Replace("\"", "").Replace("\n", "").Trim();
+        }
+
+        //GetUrl
+        index = 0;
+
+        index = jsonData.IndexOf("\"url\":");
+        if (index > 0)
+        {
+            name = jsonData.Substring(index + "\"url\":".Length,
+                   jsonData.Substring(index + "\"url\":".Length).IndexOf(","))
+                           .Replace("\"", "").Trim();
+        }
+
+        //GetName
+        index = 0;
+
+        index = jsonData.IndexOf("\"name\":");
+        if (index > 0)
+        {
+            name = jsonData.Substring(index + "\"name\":".Length,
+                   jsonData.Substring(index + "\"name\":".Length).IndexOf(","))
+                           .Replace("\"", "").Replace("\n", "").Trim();
+        }
+
+        //GetDescription
+        index = 0;
+
+        index = jsonData.IndexOf("\"description\":");
+        if (index > 0)
+        {
+            description = jsonData.Substring(index + "\"description\":".Length,
+                          jsonData.Substring(index + "\"description\":".Length).IndexOf("\","))
+                                  .Replace("\"", "").Trim();
+        }
+
+        //GetType
+        index = 0;
+
+        index = jsonData.IndexOf("\"@type\":");
+        if (index > 0)
+        {
+            titleType = jsonData.Substring(index + "\"@type\":".Length,
+                          jsonData.Substring(index + "\"@type\":".Length).IndexOf("\","))
+                                  .Replace("\"", "").Trim();
+        }
+
+        //GetKeywords
+        index = 0;
+
+        index = jsonData.IndexOf("\"keywords\":");
+        if (index > 0)
+        {
+            description = jsonData.Substring(index + "\"keywords\":".Length,
+                          jsonData.Substring(index + "\"keywords\":".Length).IndexOf("\","))
+                                  .Replace("\"", "").Trim();
+        }
+
+        //GetRate info
+        index = 0;
+
+        index = jsonData.IndexOf("\"contentRating\":");
+        if (index > 0)
+        {
+            rate = jsonData.Substring(index + "\"contentRating\":".Length,
+                   jsonData.Substring(index + "\"contentRating\":".Length).IndexOf(","))
+                           .Replace("\"", "").Replace("\n", "").Trim();
+        }
+        else
+        {
+            rate = "Not Rated";
+        }
+
+        //GetActor(s) info
+        index = jsonData.IndexOf("\"actor\":");
+        if (index > 0)
+        {
+            actor = GetNameList(jsonData.Substring(jsonData.IndexOf("\"actor\":") + "\"actor\":".Length,
+                             jsonData.Substring(jsonData.IndexOf("\"actor\":") + "\"actor\":".Length).IndexOf("]") + 1)
+                                     .Replace("[", "").Replace("]", "").Replace("\"", "").Replace("\n", "").Trim());
+        }
+
+        //GetDirector(s) info
+        index = jsonData.IndexOf("\"director\":");
+        if (index > 0)
+        {
+            director = GetNameList(jsonData.Substring(jsonData.IndexOf("\"director\":") + "\"director\":".Length,
+                                   jsonData.Substring(jsonData.IndexOf("\"director\":") + "\"director\":".Length).IndexOf("]") + 1)
+                                           .Replace("[", "").Replace("]", "").Replace("\"", "").Replace("\n", "").Trim());
+        }
+
+        //GetCreator(s)
+        index = jsonData.IndexOf("\"creator\":");
+        if (index > 0)
+        {
+            creator = GetNameList(jsonData.Substring(jsonData.IndexOf("\"creator\":") + "\"creator\":".Length,
+                                  jsonData.Substring(jsonData.IndexOf("\"creator\":") + "\"creator\":".Length).IndexOf("]") + 1)
+                                          .Replace("[", "").Replace("]", "").Replace("\"", "").Replace("\n", "").Trim());
         }
 
         //GetDuration info
         index = 0;
 
-        index = tempString.IndexOf(@"<h4 class=""inline"">Runtime:</h4>");
+        index = jsonData.IndexOf("\"duration\":");
         if (index > 0)
         {
-            duration = GetDuration(tempString.Substring(index));
-        }
-        else
-        {
-            if (tempString.IndexOf(@"<time itemprop=""duration"" datetime") > 0)
-            {
-                duration = ConvertDuration(tempString.Substring(tempString.IndexOf(@"<time itemprop=""duration"" datetime")));
-            }
-            else
-            {
-                duration = "0";
-            }
+            duration = jsonData.Substring(index + "\"duration\":".Length,
+                          jsonData.Substring(index + "\"duration\":".Length).IndexOf("\","))
+                                  .Replace("\"", "").Trim();
+            durationDesc = GetDuration(duration);
         }
 
-        //GetStar(s) info
-        index = tempString.IndexOf(@"<h4 class=""inline"">Stars:</h4>");
-        if (index > 0)
-        {
-            star = GetStars(tempString.Substring(index, tempString.Substring(index).IndexOf(@"<a href=""fullcredits")));
-        }
-        else if (tempString.IndexOf(@"<h4 class=""inline"">Star:</h4>") > 0)
-        {
-            index = tempString.IndexOf(@"<h4 class=""inline"">Star:</h4>");
-            star = GetStar(tempString.Substring(index, tempString.Substring(index).IndexOf(@"</span>")));
-        }
+        //runTime
 
         //GetRating info
         index = 0;
@@ -157,28 +248,25 @@ public class IMDb
             rating = GetRating(tempString.Substring(index));
         }
 
-        //GetRate info
-        index = 0;
-
-        index = tempString.IndexOf(@"<meta itemprop=""contentRating"" content=""");
-        if (index > 0)
-        {
-            rate = GetRate(tempString.Substring(index));
-        }
-        else
-        {
-            rate = "Not Rated";
-        }
-
         posterData = GetBase64PosterData(posterUrl);
 
         Movie movie = new Movie()
         {
+            Name = name,
+            Actor = actor,
+            Creator = creator,
+            DatePublished = datePublished,
+            Description = description,
             Director = director,
-            Genre = genre,
             Duration = duration,
-            Star = star,
-            Rating = rating,
+            DurationDesc = durationDesc,
+            Genre = genre,
+            AggregateRating = "",
+            RatingValue = rating,
+            TitleType = titleType,
+            Url = url,
+            BestRating = "",
+            WorstRating = "",
             Rate = rate,
             PosterUrl = posterUrl
         };
@@ -244,18 +332,6 @@ public class IMDb
         return (intHour * 60 + intMin).ToString() + " min";
     }
 
-    private string GetRate(string temp)
-    {
-        int index = 0;
-
-        string rate = string.Empty;
-
-        index = temp.IndexOf(@"<meta itemprop=""contentRating"" content=""");
-        index += (@"<meta itemprop=""contentRating"" content=""").Length;
-
-        return temp.Substring(index + temp.Substring(index).IndexOf(">") + 1, temp.Substring(index + temp.Substring(index).IndexOf(">") + 1).IndexOf("\n"));
-    }
-
     private string GetRating(string temp)
     {
         int index = 0;
@@ -273,119 +349,80 @@ public class IMDb
         else return "0";
     }
 
-    private string GetStar(string temp)
-    {
-        int index = 0;
-        string star = string.Empty;
-
-        index += temp.Substring(index).IndexOf(@"<span class=""itemprop"" itemprop=""name"">");
-        index += (@"<span class=""itemprop"" itemprop=""name"">").Length;
-
-        return temp.Substring(index);
-    }
-
-    private string GetStars(string temp)
+    private string GetNameList(string temp)
     {
         int index = 0;
         int index2 = 0;
-        string star = string.Empty;
+        string name = string.Empty;
 
         try
         {
-            index += temp.Substring(index).IndexOf(@"?ref_=tt_ov_st_sm");
+            index += temp.IndexOf("name:") + "name:".Length;
 
-            while (index > 0)
+            while (index > "name:".Length)
             {
-                index += (@"?ref_=tt_ov_st_sm").Length + 3;
-                index2 = temp.Substring(index).IndexOf(@"</a>");
-                star += ", " + temp.Substring(index, index2);
-
+                index2 = temp.Substring(temp.IndexOf("name:") + "name:".Length).IndexOf("}") - 1;
+                name += string.Format(", {0}", temp.Substring(index, index2).Trim());
                 temp = temp.Substring(index + index2);
-                index = temp.IndexOf(@"?ref_=tt_ov_st_sm");
+                if (temp.Length > "name:".Length)
+                {
+                    index = temp.IndexOf("name:") + "name:".Length;
+                }
+                else
+                {
+                    index = 0;
+                }
             }
 
-            star = (star.Length > 2) ? star.Substring(2) : null;
+            name = (name.Length > 2) ? name.Substring(2) : null;
         }
         catch (Exception ex)
         {
-            star = string.Empty;
+            name = string.Empty;
         }
 
-        return star;
+        return name;
     }
 
-    private string GetDuration(string temp)
+    private string GetDuration(string formattedDuration)
     {
-        int index = 0;
-        int index2 = 0;
         string duration = string.Empty;
-
-        index =  temp.IndexOf(@"<time datetime=""PT");
-            //temp.IndexOf(@"<time itemprop=""duration"" datetime=");
-
-        while (index > 0)
+        if (formattedDuration.Contains("PT"))
         {
-            index = temp.IndexOf(@"<time datetime=""PT") + 18 + temp.Substring(temp.IndexOf(@"<time datetime=""PT") + 18).IndexOf("M\">") + 3;
-            //index += (@"M"">").Length;
-            index2 = temp.Substring(index).IndexOf(@"</time>");
+            int hour = 0;
+            int minute = 0;
 
-            duration += " | " + temp.Substring(index, index2);
-            temp = temp.Substring(temp.IndexOf(@"</time>") + (@"</time>").Length).Trim();
-
-            if (temp.Substring(0, 6) != @"</div>" && temp.Substring(0, 1) == "(")
+            try
             {
-                duration += " " + temp.Substring(0, temp.IndexOf("\n"));
+                if (int.TryParse(formattedDuration.ToUpper().Replace("PT", "").Split('H')[0], out hour))
+                    if (int.TryParse(formattedDuration.ToUpper().Replace("PT", "").Split('H')[1].Split('M')[0], out minute))
+                        duration = string.Format("{0} minutes", hour * 60 + minute);
             }
-
-            index = temp.IndexOf(@"<time datetime=""PT");
-        }
-
-        if (duration.Length > 2)
-        {
-            return duration.Substring(2);
+            catch (Exception ex)
+            {
+            }
         }
 
         return duration;
     }
 
-    private string GetGenre(string temp)
+    private string GetList(string listString)
     {
-        int index = 0;
-        int index2 = 0;
-        string genre = string.Empty;
+        string list = "";
 
-        do
+        for (int i = 0; i < listString.Split(',').Length; i++)
         {
-            index += (@"<span class=""itemprop"" itemprop=""genre"">").Length;
-            index2 = temp.Substring(index).IndexOf(@"</span>");
-            genre += ", " + temp.Substring(index, index2);
-
-            temp = temp.Substring(index + index2);
-            index = temp.IndexOf(@"<span class=""itemprop"" itemprop=""genre"">");
-        } while (index > 0);
-
-        return genre.Substring(2);
-    }
-
-    private string GetDirector(string temp)
-    {
-        int index = 0;
-        int index2 = 0;
-        string director = string.Empty;
-
-        index += temp.Substring(index).IndexOf(@"tt_ov_dr""");
-
-        while (index > 0)
-        {
-            index += (@"tt_ov_dr").Length + 3;
-            index2 = temp.Substring(index).IndexOf(@"</a>");
-            director += ", " + temp.Substring(index, index2);
-
-            temp = temp.Substring(index + index2);
-            index = temp.IndexOf(@"tt_ov_dr""");
+            list += ", " + listString.Split(',')[i].Trim();
         }
 
-        return director.Substring(2);
+        if (list.Length > 2)
+        {
+            return list.Substring(2);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public string GetBase64PosterData(string url)

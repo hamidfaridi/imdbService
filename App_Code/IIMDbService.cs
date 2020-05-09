@@ -15,7 +15,7 @@ public interface IIMDbService
     [WebInvoke(Method = "GET",
         RequestFormat = WebMessageFormat.Json,
         ResponseFormat = WebMessageFormat.Json,
-        UriTemplate = "/GetDetailByTitleCode/?url={url}",
+        UriTemplate = "/GetDetailByUrl/?url={url}",
         BodyStyle = WebMessageBodyStyle.Bare)]
     Movie GetDetailByTitleCode(string url);
 
