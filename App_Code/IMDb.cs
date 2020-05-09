@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IdentityModel;
+using System.IO;
 using System.Net;
 using System.Text;
+using System.Xml;
 
 /// <summary>
 /// Zusammenfassungsbeschreibung für IMDb
@@ -39,6 +41,7 @@ public class IMDb
         string description = string.Empty;
         string genre = string.Empty;
         string duration = string.Empty;
+        string durations = string.Empty;
         string durationDesc = string.Empty;
         string actor = string.Empty;
         string rating = string.Empty;
@@ -237,14 +240,32 @@ public class IMDb
             durationDesc = GetDuration(duration);
         }
 
-        //runTime
+        //Calculate Durations
+        if (!string.IsNullOrWhiteSpace(runTime))
+        {
+            runTime = "<div class=\"txt - block\">"
+        + "<h4 class=\"inline\">Runtime:</h4>"
+        + "<time datetime = \"PT108M\"> 108 min</time>"
+          + "<span class=\"ghost\">|</span>"
+        + "<time datetime = \"PT92M\"> 92 min</time>"
+           + " (heavily cut)"
+          + "<span class=\"ghost\">|</span>"
+        + "<time datetime = \"PT84M\">84 min</time>"
+           + " (TV)"
+    + "</div>";
+
+            durations = GetRuntime(runTime);
+        }
 
         //GetRating info
         index = 0;
-
-        index = tempString.IndexOf(@"<span itemprop=""ratingValue"">");
+        index = jsonData.IndexOf("\"aggregateRating\":");
         if (index > 0)
         {
+            duration = jsonData.Substring(index + "\"duration\":".Length,
+                          jsonData.Substring(index + "\"duration\":".Length).IndexOf("\","))
+                                  .Replace("\"", "").Trim();
+            
             rating = GetRating(tempString.Substring(index));
         }
 
@@ -274,6 +295,22 @@ public class IMDb
         return movie;
     }
 
+    private string GetRuntime(string runTime)
+    {
+        int index = runTime.Length;
+        XmlDocument document = new XmlDocument();
+
+        try
+        {
+            document.LoadXml(runTime);
+            return document.InnerText;
+        }
+        catch (Exception ex)
+        {
+            return "Can not read runtime detail.";
+        }
+    }
+
     public string GetMoviePhotoUrl(string url)
     {
         string photoUrl = string.Empty;
@@ -295,41 +332,6 @@ public class IMDb
         }
 
         return photoUrl;
-    }
-
-    private string ConvertDuration(string temp)
-    {
-        int intHour = 0;
-        int intMin = 0;
-        string strHour = "";
-        string strMin = "";
-        string strDuration = "";
-        try
-        {
-            strDuration = temp.Substring(temp.IndexOf(@"M"">") + (@"M"">").Length).Trim().Substring(0, temp.Substring(temp.IndexOf(@"M"">") + (@"M"">").Length).Trim().IndexOf("\n"));
-        }
-        catch (Exception)
-        {
-        }
-
-        if (strDuration.IndexOf("h") > 0)
-        {
-            strHour = strDuration.Substring(0, strDuration.IndexOf("h"));
-        }
-
-        if (strDuration.IndexOf("min") > 3 && (strDuration.IndexOf("h") > 0))
-        {
-            strMin = strDuration.Substring(strDuration.IndexOf("h") + 2, strDuration.IndexOf("min") - 3);
-        }
-        else if (strDuration.IndexOf("min") > 3 && (strDuration.IndexOf("h") == -1))
-        {
-            strMin = strDuration.Substring(0, strDuration.IndexOf("min") - 3);
-        }
-
-        int.TryParse(strHour, out intHour);
-        int.TryParse(strMin, out intMin);
-
-        return (intHour * 60 + intMin).ToString() + " min";
     }
 
     private string GetRating(string temp)
