@@ -34,9 +34,25 @@ public interface IIMDbService
     [WebInvoke(Method = "GET",
         RequestFormat = WebMessageFormat.Json,
         ResponseFormat = WebMessageFormat.Json,
+        UriTemplate = "/GetThumbnailUrl/?url={url}",
+        BodyStyle = WebMessageBodyStyle.Bare)]
+    string GetThumbnailUrl(string url);
+
+    [OperationContract]
+    [WebInvoke(Method = "GET",
+        RequestFormat = WebMessageFormat.Json,
+        ResponseFormat = WebMessageFormat.Json,
         UriTemplate = "/GetBase64PosterData/?url={url}",
         BodyStyle = WebMessageBodyStyle.Bare)]
-    string GetPosterBase64Data(string url);
+    string GetBase64PosterData(string url);
+
+    [OperationContract]
+    [WebInvoke(Method = "GET",
+            RequestFormat = WebMessageFormat.Json,
+            ResponseFormat = WebMessageFormat.Json,
+            UriTemplate = "/GetBase64ThumbnailData/?url={url}",
+            BodyStyle = WebMessageBodyStyle.Bare)]
+    string GetBase64ThumbnailData(string url);
 
     #endregion
 
@@ -70,9 +86,25 @@ public interface IIMDbService
     [WebInvoke(Method = "GET",
         RequestFormat = WebMessageFormat.Json,
         ResponseFormat = WebMessageFormat.Xml,
+        UriTemplate = "/GetThumbnailUrlXML/?url={url}",
+        BodyStyle = WebMessageBodyStyle.Bare)]
+    string GetThumbnailUrlXML(string url);
+
+    [OperationContract]
+    [WebInvoke(Method = "GET",
+        RequestFormat = WebMessageFormat.Json,
+        ResponseFormat = WebMessageFormat.Xml,
         UriTemplate = "/GetBase64PosterDataXML/?url={url}",
         BodyStyle = WebMessageBodyStyle.Bare)]
-    string GetPosterBase64DataXML(string url);
+    string GetBase64PosterDataXML(string url);
+
+    [OperationContract]
+    [WebInvoke(Method = "GET",
+            RequestFormat = WebMessageFormat.Json,
+            ResponseFormat = WebMessageFormat.Xml,
+            UriTemplate = "/GetBase64ThumbnailDataXML/?url={url}",
+            BodyStyle = WebMessageBodyStyle.Bare)]
+    string GetBase64ThumbnailDataXML(string url);
 
     #endregion
 }

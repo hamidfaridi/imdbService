@@ -103,4 +103,9 @@ public class Movie
     /// Title poster full url
     /// </summary>
     public string PosterUrl;
+
+    /// <summary>
+    /// Title thumbnail full url
+    /// </summary>
+    public string PosterThumbnail;
 }

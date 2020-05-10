@@ -56,14 +56,33 @@
     /// <param name="url">full Url path
     /// for Example: "https://www.imdb.com/title/tt1371111/"</param>
     /// <returns>Base64 data in json data format</returns>
-    public string GetPosterBase64Data(string url)
+    public string GetBase64PosterData(string url)
     {
         IMDb imdb = new IMDb(url);
-        string posterUrl = imdb.GetMoviePhotoUrl(url);
+        string posterUrl = imdb.GetMoviePosterUrl(url);
 
         if (!string.IsNullOrWhiteSpace(posterUrl))
         {
-            return imdb.GetBase64PosterData(posterUrl);
+            return imdb.GetBase64Data(posterUrl);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Get thumbnail data in Base64 data format
+    /// </summary>
+    /// <param name="url">full Url path
+    /// for Example: "https://www.imdb.com/title/tt1371111/"</param>
+    /// <returns>Base64 data in json data format</returns>
+    public string GetBase64ThumbnailData(string url)
+    {
+        IMDb imdb = new IMDb(url);
+        string posterUrl = imdb.GetMoviePosterThumbnailUrl(url);
+
+        if (!string.IsNullOrWhiteSpace(posterUrl))
+        {
+            return imdb.GetBase64Data(posterUrl);
         }
 
         return null;
@@ -78,7 +97,19 @@
     public string GetPosterUrl(string url)
     {
         IMDb imdb = new IMDb(url);
-        return imdb.GetMoviePhotoUrl(url);
+        return imdb.GetMoviePosterUrl(url);
+    }
+
+    /// <summary>
+    /// Get thumbnail url from requested IMDb title url
+    /// </summary>
+    /// <param name="url">full Url path
+    /// for Example: "https://www.imdb.com/title/tt1371111/"</param>
+    /// <returns>returns full photo url in json data format</returns>
+    public string GetThumbnailUrl(string url)
+    {
+        IMDb imdb = new IMDb(url);
+        return imdb.GetMoviePosterThumbnailUrl(url);
     }
 
     /// <summary>
@@ -115,13 +146,35 @@
     }
 
     /// <summary>
+    /// Get thumbnail url from requested IMDb title url
+    /// </summary>
+    /// <param name="url">full Url path
+    /// for Example: "https://www.imdb.com/title/tt1371111/"</param>
+    /// <returns>returns full photo url in XML data format</returns>
+    public string GetThumbnailUrlXML(string url)
+    {
+        return GetThumbnailUrl(url);
+    }
+
+    /// <summary>
     /// Get poster url from requested IMDb title url
     /// </summary>
     /// <param name="url">full Url path
     /// for Example: "https://www.imdb.com/title/tt1371111/"</param>
     /// <returns>returns full photo url in XML data format</returns>
-    public string GetPosterBase64DataXML(string url)
+    public string GetBase64PosterDataXML(string url)
     {
-        return GetPosterBase64Data(url);
+        return GetBase64PosterData(url);
+    }
+
+    /// <summary>
+    /// Get thumbnail data in Base64 data format
+    /// </summary>
+    /// <param name="url">full Url path
+    /// for Example: "https://www.imdb.com/title/tt1371111/"</param>
+    /// <returns>Base64 data in XML data format</returns>
+    public string GetBase64ThumbnailDataXML(string url)
+    {
+        return GetBase64ThumbnailData(url);
     }
 }

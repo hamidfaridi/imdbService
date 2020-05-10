@@ -3,6 +3,7 @@ using System.IdentityModel;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Web.UI;
 using System.Xml;
 
 /// <summary>
@@ -54,6 +55,7 @@ public class IMDb
         string rate = string.Empty;
         string url = string.Empty;
         string posterUrl = string.Empty;
+        string posterThumbnail = string.Empty;
         string posterData = string.Empty;
 
         string runTime = string.Empty;
@@ -64,12 +66,19 @@ public class IMDb
             {
                 client.Encoding = Encoding.UTF8;
                 webPageContent = client.DownloadString(_url);
+
+                //GetPosterThumbnail
+                posterThumbnail = webPageContent.Substring(webPageContent.IndexOf(@"<div class=""poster"">")
+                + webPageContent.Substring(webPageContent.IndexOf(@"<div class=""poster"">")).IndexOf("src="))
+                .Remove(0, 5).Substring(0, webPageContent.Substring(webPageContent.IndexOf(@"<div class=""poster"">")
+                + webPageContent.Substring(webPageContent.IndexOf(@"<div class=""poster"">"))
+                .IndexOf("src=")).Remove(0, 5).IndexOf(@""""));
             }
             catch (Exception ex)
             {
                 if (!ex.Message.Contains("The remote server returned an error: (403) Forbidden.") && !ex.Message.Contains("Unable to connect to the remote server"))
                 {
-                    throw new BadRequestException(string.Format("{0}", ex.Message), ex.InnerException);
+                    //throw new BadRequestException(string.Format("{0}", ex.Message), ex.InnerException);
                 }
                 return null;
             }
@@ -381,7 +390,8 @@ public class IMDb
 
         try
         {
-            posterData = GetBase64PosterData(posterUrl);
+            posterData = string.Format("You can user for getting poster data in Base64format http://imdbservice.hamidfaridi.com/IMDbService.svc/GetBase64PosterData/?url={0}", _url);
+            //GetBase64PosterData(posterUrl);
         }
         catch (Exception ex)
         {
@@ -409,21 +419,55 @@ public class IMDb
             BestRating = bestRating,
             WorstRating = worstRating,
             PosterUrl = posterUrl,
+            PosterThumbnail = posterThumbnail,
             PosterData = posterData
         };
 
         return movie;
     }
 
+    /// <summary>
+    /// Gets runtime(s)
+    /// </summary>
+    /// <param name="runTime">Runtime text block</param>
+    /// <returns>Runtime(s) devided by '|'</returns>
     private string GetRuntime(string runTime)
     {
+        string formattedDuration = string.Empty;
         XmlDocument document = new XmlDocument();
 
         try
         {
             document.LoadXml(runTime.Replace("\n", ""));
-            string formattedDuration = FomratXML(document.InnerText);
-            return formattedDuration;
+
+            try
+            {
+                for (int i = 0; i < document.InnerText.Split('|').Length; i++)
+                {
+                    formattedDuration += " |";
+
+                    for (int j = 0; j < document.InnerText.Split('|')[i].Split(' ').Length; j++)
+                    {
+                        if (!string.IsNullOrWhiteSpace(document.InnerText.Split('|')[i].Split(' ')[j].Trim()))
+                        {
+                            formattedDuration += " " + document.InnerText.Split('|')[i].Split(' ')[j].Trim();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Cannot format durations.");
+            }
+
+            if (formattedDuration.Length > 2)
+            {
+                return formattedDuration.Substring(3);
+            }
+            else
+            {
+                return formattedDuration;
+            }
         }
         catch (Exception ex)
         {
@@ -431,64 +475,62 @@ public class IMDb
         }
     }
 
-    private string FomratXML(string innerText)
+    /// <summary>
+    /// Gets Poster thumbnail file if available
+    /// </summary>
+    /// <param name="url">Imdb full path url</param>
+    /// <returns>Full thumbnail url</returns>
+    public string GetMoviePosterThumbnailUrl(string url)
     {
-        string output = string.Empty;
-
-        try
-        {
-            for (int i = 0; i < innerText.Split('|').Length; i++)
-            {
-                output += " |";
-
-                for (int j = 0; j < innerText.Split('|')[i].Split(' ').Length; j++)
-                {
-                    if (!string.IsNullOrWhiteSpace(innerText.Split('|')[i].Split(' ')[j].Trim()))
-                    {
-                        output += " " + innerText.Split('|')[i].Split(' ')[j].Trim();
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("Cannot format durations.");
-        }
-
-        if (output.Length > 2)
-        {
-            return output.Substring(2);
-        }
-        else
-        {
-            return output;
-        }
-    }
-
-    public string GetMoviePhotoUrl(string url)
-    {
-        string photoUrl = string.Empty;
+        string thumbnailUrl = string.Empty;
 
         try
         {
             string processedString = new WebClient().DownloadString(url);
 
-            photoUrl = processedString.Substring(processedString.IndexOf(@"<div class=""poster"">")
+            thumbnailUrl = processedString.Substring(processedString.IndexOf(@"<div class=""poster"">")
                 + processedString.Substring(processedString.IndexOf(@"<div class=""poster"">")).IndexOf("src="))
                 .Remove(0, 5).Substring(0, processedString.Substring(processedString.IndexOf(@"<div class=""poster"">")
                 + processedString.Substring(processedString.IndexOf(@"<div class=""poster"">"))
                 .IndexOf("src=")).Remove(0, 5).IndexOf(@""""));
-
         }
         catch (Exception)
         {
-            photoUrl = "Cannot get PhotoUrl (Error occured)";
+            thumbnailUrl = "Cannot get PhotoUrl (Error occured)";
         }
 
-        return photoUrl;
+        return thumbnailUrl;
     }
 
-    private string GetNameList(string temp)
+    /// <summary>
+    /// Gets Poster large file if available
+    /// </summary>
+    /// <param name="url">Imdb full path url</param>
+    /// <returns>Full poster url</returns>
+    public string GetMoviePosterUrl(string url)
+    {
+        string posterUrl = string.Empty;
+
+        try
+        {
+            string processedString = new WebClient().DownloadString(url);
+            posterUrl = processedString.Substring(processedString.IndexOf("\"image\":") + "\"image\":".Length,
+                processedString.Substring(processedString.IndexOf("\"image\":") + "\"image\":".Length).IndexOf("\",")).Replace("\"", "").Trim();
+        }
+        catch (Exception ex)
+        {
+            return "Poster url couldn't found. (Error Occured))";
+        }
+
+        return posterUrl;
+    }
+
+    /// <summary>
+    /// Gets name(s) from listed names format
+    /// </summary>
+    /// <param name="nameList">Name list</param>
+    /// <returns>name string devided by comma</returns>
+    private string GetNameList(string nameList)
     {
         int index = 0;
         int index2 = 0;
@@ -496,16 +538,16 @@ public class IMDb
 
         try
         {
-            index += temp.IndexOf("name:") + "name:".Length;
+            index += nameList.IndexOf("name:") + "name:".Length;
 
             while (index > "name:".Length)
             {
-                index2 = temp.Substring(temp.IndexOf("name:") + "name:".Length).IndexOf("}") - 1;
-                name += string.Format(", {0}", temp.Substring(index, index2).Trim());
-                temp = temp.Substring(index + index2);
-                if (temp.Length > "name:".Length)
+                index2 = nameList.Substring(nameList.IndexOf("name:") + "name:".Length).IndexOf("}") - 1;
+                name += string.Format(", {0}", nameList.Substring(index, index2).Trim());
+                nameList = nameList.Substring(index + index2);
+                if (nameList.Length > "name:".Length)
                 {
-                    index = temp.IndexOf("name:") + "name:".Length;
+                    index = nameList.IndexOf("name:") + "name:".Length;
                 }
                 else
                 {
@@ -523,6 +565,11 @@ public class IMDb
         return name;
     }
 
+    /// <summary>
+    /// Gets coded format of duration
+    /// </summary>
+    /// <param name="formattedDuration">Coded Duration</param>
+    /// <returns>Duration in minutes</returns>
     private string GetDuration(string formattedDuration)
     {
         string duration = string.Empty;
@@ -546,6 +593,11 @@ public class IMDb
         return duration;
     }
 
+    /// <summary>
+    /// Gets text list with comma seperated
+    /// </summary>
+    /// <param name="listString">List text</param>
+    /// <returns>List's names string seperated by comma</returns>
     private string GetList(string listString)
     {
         string list = "";
@@ -565,7 +617,12 @@ public class IMDb
         }
     }
 
-    public string GetBase64PosterData(string url)
+    /// <summary>
+    /// Downloads given photo url
+    /// </summary>
+    /// <param name="url">Photo url</param>
+    /// <returns>Base64 data</returns>
+    public string GetBase64Data(string url)
     {
         string posterData = string.Empty;
 
@@ -579,7 +636,7 @@ public class IMDb
         }
         catch (Exception ex)
         {
-            throw new BadRequestException(string.Format("Error occured while trying to download poster data."), ex.InnerException);
+            return "The requested url not found!";
         }
 
         return posterData;
