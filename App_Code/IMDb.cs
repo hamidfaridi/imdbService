@@ -35,7 +35,7 @@ public class IMDb
         string tempString = string.Empty;
         string datePublished = string.Empty;
         string director = string.Empty;
-        string creator = string.Empty;
+        string writers = string.Empty;
         string name = string.Empty;
         string titleType = string.Empty;
         string description = string.Empty;
@@ -44,7 +44,13 @@ public class IMDb
         string durations = string.Empty;
         string durationDesc = string.Empty;
         string actor = string.Empty;
-        string rating = string.Empty;
+        string keywords = string.Empty;
+        string aggregateRating = string.Empty;
+        string ratingCount = string.Empty;
+        string bestRating = string.Empty;
+        string worstRating = string.Empty;
+        string ratingValue = string.Empty;
+
         string rate = string.Empty;
         string url = string.Empty;
         string posterUrl = string.Empty;
@@ -83,9 +89,8 @@ public class IMDb
                                              webPageContent.Substring(webPageContent.IndexOf("<script type=\"application/ld+json\">")
                                                + "<script type=\"application/ld+json\">".Length).IndexOf("</script"));
 
-                runTime = webPageContent.Substring(webPageContent.ToUpper().IndexOf("RUNTIME:"),
-                                   webPageContent.Substring(webPageContent.ToUpper().IndexOf("RUNTIME:")).ToUpper().IndexOf("</DIV>"));
-
+                runTime = webPageContent.Substring(webPageContent.ToLower().IndexOf("runtime:")).Substring(webPageContent.Substring(webPageContent.ToLower().IndexOf("runtime:")).ToLower().IndexOf("<time datetime="));
+                runTime = "<div>" + runTime.Substring(0, runTime.IndexOf("</div>")) + "</div>";
                 webPageContent = string.Empty;
             }
         }
@@ -102,7 +107,7 @@ public class IMDb
         }
         catch (Exception ex)
         {
-            posterUrl = "Poster url couldn't found.";
+            posterUrl = "Poster url couldn't found. (Error Occured))";
         }
 
         //GetGenre(s) info
@@ -118,7 +123,7 @@ public class IMDb
             }
             catch (Exception ex)
             {
-                throw new Exception("Cannot retrieve Genre");
+                throw new Exception("Genre data couldn't found. (Error Occured))");
             }
         }
 
@@ -128,7 +133,14 @@ public class IMDb
         index = jsonData.IndexOf("\"datePublished\":");
         if (index > 0)
         {
-            datePublished = jsonData.Substring(index + "\"datePublished\":".Length, jsonData.Substring(index + "\"datePublished\":".Length).IndexOf(",")).Replace("\"", "").Replace("\n", "").Trim();
+            try
+            {
+                datePublished = jsonData.Substring(index + "\"datePublished\":".Length, jsonData.Substring(index + "\"datePublished\":".Length).IndexOf(",")).Replace("\"", "").Replace("\n", "").Trim();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Genre data couldn't found. (Error Occured))");
+            }
         }
 
         //GetUrl
@@ -137,9 +149,16 @@ public class IMDb
         index = jsonData.IndexOf("\"url\":");
         if (index > 0)
         {
-            name = jsonData.Substring(index + "\"url\":".Length,
+            try
+            {
+                url = jsonData.Substring(index + "\"url\":".Length,
                    jsonData.Substring(index + "\"url\":".Length).IndexOf(","))
                            .Replace("\"", "").Trim();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Url data couldn't found. (Error Occured))");
+            }
         }
 
         //GetName
@@ -148,9 +167,16 @@ public class IMDb
         index = jsonData.IndexOf("\"name\":");
         if (index > 0)
         {
-            name = jsonData.Substring(index + "\"name\":".Length,
-                   jsonData.Substring(index + "\"name\":".Length).IndexOf(","))
-                           .Replace("\"", "").Replace("\n", "").Trim();
+            try
+            {
+                name = jsonData.Substring(index + "\"name\":".Length,
+                       jsonData.Substring(index + "\"name\":".Length).IndexOf(","))
+                               .Replace("\"", "").Replace("\n", "").Trim();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Name data couldn't found. (Error Occured))");
+            }
         }
 
         //GetDescription
@@ -159,9 +185,16 @@ public class IMDb
         index = jsonData.IndexOf("\"description\":");
         if (index > 0)
         {
-            description = jsonData.Substring(index + "\"description\":".Length,
+            try
+            {
+                description = jsonData.Substring(index + "\"description\":".Length,
                           jsonData.Substring(index + "\"description\":".Length).IndexOf("\","))
                                   .Replace("\"", "").Trim();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Description data couldn't found. (Error Occured))");
+            }
         }
 
         //GetType
@@ -170,9 +203,16 @@ public class IMDb
         index = jsonData.IndexOf("\"@type\":");
         if (index > 0)
         {
-            titleType = jsonData.Substring(index + "\"@type\":".Length,
-                          jsonData.Substring(index + "\"@type\":".Length).IndexOf("\","))
-                                  .Replace("\"", "").Trim();
+            try
+            {
+                titleType = jsonData.Substring(index + "\"@type\":".Length,
+                                              jsonData.Substring(index + "\"@type\":".Length).IndexOf("\","))
+                                                      .Replace("\"", "").Trim();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("TitleType data couldn't found. (Error Occured))");
+            }
         }
 
         //GetKeywords
@@ -181,9 +221,16 @@ public class IMDb
         index = jsonData.IndexOf("\"keywords\":");
         if (index > 0)
         {
-            description = jsonData.Substring(index + "\"keywords\":".Length,
-                          jsonData.Substring(index + "\"keywords\":".Length).IndexOf("\","))
-                                  .Replace("\"", "").Trim();
+            try
+            {
+                keywords = jsonData.Substring(index + "\"keywords\":".Length,
+                           jsonData.Substring(index + "\"keywords\":".Length).IndexOf("\","))
+                                   .Replace("\"", "").Trim();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Keywords data couldn't found. (Error Occured))");
+            }
         }
 
         //GetRate info
@@ -192,9 +239,16 @@ public class IMDb
         index = jsonData.IndexOf("\"contentRating\":");
         if (index > 0)
         {
-            rate = jsonData.Substring(index + "\"contentRating\":".Length,
-                   jsonData.Substring(index + "\"contentRating\":".Length).IndexOf(","))
-                           .Replace("\"", "").Replace("\n", "").Trim();
+            try
+            {
+                rate = jsonData.Substring(index + "\"contentRating\":".Length,
+                       jsonData.Substring(index + "\"contentRating\":".Length).IndexOf(","))
+                               .Replace("\"", "").Replace("\n", "").Trim();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Rate data couldn't found. (Error Occured))");
+            }
         }
         else
         {
@@ -205,27 +259,48 @@ public class IMDb
         index = jsonData.IndexOf("\"actor\":");
         if (index > 0)
         {
-            actor = GetNameList(jsonData.Substring(jsonData.IndexOf("\"actor\":") + "\"actor\":".Length,
-                             jsonData.Substring(jsonData.IndexOf("\"actor\":") + "\"actor\":".Length).IndexOf("]") + 1)
-                                     .Replace("[", "").Replace("]", "").Replace("\"", "").Replace("\n", "").Trim());
+            try
+            {
+                actor = GetNameList(jsonData.Substring(jsonData.IndexOf("\"actor\":") + "\"actor\":".Length,
+                                 jsonData.Substring(jsonData.IndexOf("\"actor\":") + "\"actor\":".Length).IndexOf("]") + 1)
+                                         .Replace("[", "").Replace("]", "").Replace("\"", "").Replace("\n", "").Trim());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Actor data couldn't found. (Error Occured))");
+            }
         }
 
         //GetDirector(s) info
         index = jsonData.IndexOf("\"director\":");
         if (index > 0)
         {
-            director = GetNameList(jsonData.Substring(jsonData.IndexOf("\"director\":") + "\"director\":".Length,
-                                   jsonData.Substring(jsonData.IndexOf("\"director\":") + "\"director\":".Length).IndexOf("]") + 1)
-                                           .Replace("[", "").Replace("]", "").Replace("\"", "").Replace("\n", "").Trim());
+            try
+            {
+                director = GetNameList(jsonData.Substring(jsonData.IndexOf("\"director\":") + "\"director\":".Length,
+                                                   jsonData.Substring(jsonData.IndexOf("\"director\":") + "\"director\":".Length).IndexOf("]") + 1)
+                                                           .Replace("[", "").Replace("]", "").Replace("\"", "").Replace("\n", "").Trim());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Director data couldn't found. (Error Occured))");
+            }
         }
 
         //GetCreator(s)
         index = jsonData.IndexOf("\"creator\":");
         if (index > 0)
         {
-            creator = GetNameList(jsonData.Substring(jsonData.IndexOf("\"creator\":") + "\"creator\":".Length,
-                                  jsonData.Substring(jsonData.IndexOf("\"creator\":") + "\"creator\":".Length).IndexOf("]") + 1)
-                                          .Replace("[", "").Replace("]", "").Replace("\"", "").Replace("\n", "").Trim());
+            try
+            {
+                writers = GetNameList(jsonData.Substring(jsonData.IndexOf("\"creator\":") + "\"creator\":".Length,
+                                      jsonData.Substring(jsonData.IndexOf("\"creator\":") + "\"creator\":".Length).IndexOf("]") + 1)
+                                              .Replace("[", "").Replace("]", "").Replace("\"", "").Replace("\n", "").Trim());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Creator data couldn't found. (Error Occured))");
+            }
         }
 
         //GetDuration info
@@ -234,26 +309,22 @@ public class IMDb
         index = jsonData.IndexOf("\"duration\":");
         if (index > 0)
         {
-            duration = jsonData.Substring(index + "\"duration\":".Length,
-                          jsonData.Substring(index + "\"duration\":".Length).IndexOf("\","))
-                                  .Replace("\"", "").Trim();
-            durationDesc = GetDuration(duration);
+            try
+            {
+                duration = jsonData.Substring(index + "\"duration\":".Length,
+                              jsonData.Substring(index + "\"duration\":".Length).IndexOf("\","))
+                                      .Replace("\"", "").Trim();
+                durationDesc = GetDuration(duration);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Duration data couldn't found. (Error Occured))");
+            }
         }
 
         //Calculate Durations
         if (!string.IsNullOrWhiteSpace(runTime))
         {
-            runTime = "<div class=\"txt - block\">"
-        + "<h4 class=\"inline\">Runtime:</h4>"
-        + "<time datetime = \"PT108M\"> 108 min</time>"
-          + "<span class=\"ghost\">|</span>"
-        + "<time datetime = \"PT92M\"> 92 min</time>"
-           + " (heavily cut)"
-          + "<span class=\"ghost\">|</span>"
-        + "<time datetime = \"PT84M\">84 min</time>"
-           + " (TV)"
-    + "</div>";
-
             durations = GetRuntime(runTime);
         }
 
@@ -262,34 +333,83 @@ public class IMDb
         index = jsonData.IndexOf("\"aggregateRating\":");
         if (index > 0)
         {
-            duration = jsonData.Substring(index + "\"duration\":".Length,
-                          jsonData.Substring(index + "\"duration\":".Length).IndexOf("\","))
-                                  .Replace("\"", "").Trim();
-            
-            rating = GetRating(tempString.Substring(index));
+            try
+            {
+                aggregateRating = jsonData.Substring(index, jsonData.Substring(index).IndexOf("},")).Trim();
+
+                try
+                {
+                    ratingCount = aggregateRating.Substring(aggregateRating.ToLower().IndexOf("ratingcount\":") + "ratingcount\":".Length, aggregateRating.Substring(aggregateRating.ToLower().IndexOf("ratingcount\":") + "ratingcount\":".Length).IndexOf(",")).Replace("\"", "").Trim();
+                }
+                catch (Exception ex)
+                {
+                    ratingCount = "RatingCount data couldn't found. (Error Occured))";
+                }
+
+                try
+                {
+                    bestRating = aggregateRating.Substring(aggregateRating.ToLower().IndexOf("bestrating\":") + "bestrating\":".Length, aggregateRating.Substring(aggregateRating.ToLower().IndexOf("bestrating\":") + "bestrating\":".Length).IndexOf(",")).Replace("\"", "").Trim();
+                }
+                catch (Exception ex)
+                {
+                    bestRating = "BestRating data couldn't found. (Error Occured))";
+                }
+
+                try
+                {
+                    worstRating = aggregateRating.Substring(aggregateRating.ToLower().IndexOf("worstrating\":") + "worstrating\":".Length, aggregateRating.Substring(aggregateRating.ToLower().IndexOf("worstrating\":") + "worstrating\":".Length).IndexOf(",")).Replace("\"", "").Trim();
+                }
+                catch (Exception ex)
+                {
+                    worstRating = "WorstRating data couldn't found. (Error Occured))";
+                }
+
+                try
+                {
+                    ratingValue = aggregateRating.Substring(aggregateRating.ToLower().IndexOf("ratingvalue\":") + "ratingvalue\":".Length).Replace("\"", "").Trim();
+                }
+                catch (Exception ex)
+                {
+                    ratingValue = "RatingValue data couldn't found. (Error Occured))";
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Rating data couldn't found. (Error Occured))");
+            }
         }
 
-        posterData = GetBase64PosterData(posterUrl);
+        try
+        {
+            posterData = GetBase64PosterData(posterUrl);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Poster data couldn't found. (Error Occured))");
+        }
 
         Movie movie = new Movie()
         {
+            Url = _url,
+            TitleType = titleType,
             Name = name,
             Actor = actor,
-            Creator = creator,
+            Writer = writers,
             DatePublished = datePublished,
             Description = description,
             Director = director,
+            Genre = genre,
             Duration = duration,
             DurationDesc = durationDesc,
-            Genre = genre,
-            AggregateRating = "",
-            RatingValue = rating,
-            TitleType = titleType,
-            Url = url,
-            BestRating = "",
-            WorstRating = "",
+            Durations = durations,
+            Keywords = keywords,
             Rate = rate,
-            PosterUrl = posterUrl
+            RatingCount = ratingCount,
+            RatingValue = ratingValue,
+            BestRating = bestRating,
+            WorstRating = worstRating,
+            PosterUrl = posterUrl,
+            PosterData = posterData
         };
 
         return movie;
@@ -297,17 +417,51 @@ public class IMDb
 
     private string GetRuntime(string runTime)
     {
-        int index = runTime.Length;
         XmlDocument document = new XmlDocument();
 
         try
         {
-            document.LoadXml(runTime);
-            return document.InnerText;
+            document.LoadXml(runTime.Replace("\n", ""));
+            string formattedDuration = FomratXML(document.InnerText);
+            return formattedDuration;
         }
         catch (Exception ex)
         {
-            return "Can not read runtime detail.";
+            return "Can not format Durations. (Error occured)";
+        }
+    }
+
+    private string FomratXML(string innerText)
+    {
+        string output = string.Empty;
+
+        try
+        {
+            for (int i = 0; i < innerText.Split('|').Length; i++)
+            {
+                output += " |";
+
+                for (int j = 0; j < innerText.Split('|')[i].Split(' ').Length; j++)
+                {
+                    if (!string.IsNullOrWhiteSpace(innerText.Split('|')[i].Split(' ')[j].Trim()))
+                    {
+                        output += " " + innerText.Split('|')[i].Split(' ')[j].Trim();
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Cannot format durations.");
+        }
+
+        if (output.Length > 2)
+        {
+            return output.Substring(2);
+        }
+        else
+        {
+            return output;
         }
     }
 
@@ -328,27 +482,10 @@ public class IMDb
         }
         catch (Exception)
         {
-            photoUrl = null;
+            photoUrl = "Cannot get PhotoUrl (Error occured)";
         }
 
         return photoUrl;
-    }
-
-    private string GetRating(string temp)
-    {
-        int index = 0;
-        int index2 = 0;
-
-        string rate = string.Empty;
-
-        index = temp.IndexOf(@"<span itemprop=""ratingValue"">");
-        index += (@"<span itemprop=""ratingValue"">").Length;
-
-        if (int.TryParse(temp.Substring(index, 3).Replace(".", ""), out index2))
-        {
-            return temp.Substring(index, 3);
-        }
-        else return "0";
     }
 
     private string GetNameList(string temp)
@@ -380,7 +517,7 @@ public class IMDb
         }
         catch (Exception ex)
         {
-            name = string.Empty;
+            name = "Cannot get Actor name(s). (Error Occured)";
         }
 
         return name;
@@ -402,6 +539,7 @@ public class IMDb
             }
             catch (Exception ex)
             {
+                duration = "Cannot get Durationdata. (Error occured)";
             }
         }
 

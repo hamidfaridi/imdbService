@@ -1,23 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.ServiceModel;
+﻿using System.ServiceModel;
 using System.ServiceModel.Web;
-using System.Text;
-using System.Web.Script.Services;
 
-// HINWEIS: Mit dem Befehl "Umbenennen" im Menü "Umgestalten" können Sie den Schnittstellennamen "IIMDbService" sowohl im Code als auch in der Konfigurationsdatei ändern.
 [ServiceContract]
 public interface IIMDbService
 {
+    #region json Data format
+
     [OperationContract]
     [WebInvoke(Method = "GET",
         RequestFormat = WebMessageFormat.Json,
         ResponseFormat = WebMessageFormat.Json,
         UriTemplate = "/GetDetailByUrl/?url={url}",
         BodyStyle = WebMessageBodyStyle.Bare)]
-    Movie GetDetailByTitleCode(string url);
+    Movie GetDetailByUrl(string url);
+
+    [OperationContract]
+    [WebInvoke(Method = "GET",
+    RequestFormat = WebMessageFormat.Json,
+    ResponseFormat = WebMessageFormat.Json,
+    UriTemplate = "/GetDetailByTitle/?title={title}",
+    BodyStyle = WebMessageBodyStyle.Bare)]
+    Movie GetDetailByTitle(string title);
 
     [OperationContract]
     [WebInvoke(Method = "GET",
@@ -34,4 +37,42 @@ public interface IIMDbService
         UriTemplate = "/GetBase64PosterData/?url={url}",
         BodyStyle = WebMessageBodyStyle.Bare)]
     string GetPosterBase64Data(string url);
+
+    #endregion
+
+    #region XML Data format
+
+    [OperationContract]
+    [WebInvoke(Method = "GET",
+        RequestFormat = WebMessageFormat.Json,
+        ResponseFormat = WebMessageFormat.Xml,
+        UriTemplate = "/GetDetailByUrlXML/?url={url}",
+        BodyStyle = WebMessageBodyStyle.Bare)]
+    Movie GetDetailByUrlXML(string url);
+
+    [OperationContract]
+    [WebInvoke(Method = "GET",
+    RequestFormat = WebMessageFormat.Json,
+    ResponseFormat = WebMessageFormat.Xml,
+    UriTemplate = "/GetDetailByTitleXML/?title={title}",
+    BodyStyle = WebMessageBodyStyle.Bare)]
+    Movie GetDetailByTitleXML(string title);
+
+    [OperationContract]
+    [WebInvoke(Method = "GET",
+        RequestFormat = WebMessageFormat.Json,
+        ResponseFormat = WebMessageFormat.Xml,
+        UriTemplate = "/GetPosterUrlXML/?url={url}",
+        BodyStyle = WebMessageBodyStyle.Bare)]
+    string GetPosterUrlXML(string url);
+
+    [OperationContract]
+    [WebInvoke(Method = "GET",
+        RequestFormat = WebMessageFormat.Json,
+        ResponseFormat = WebMessageFormat.Xml,
+        UriTemplate = "/GetBase64PosterDataXML/?url={url}",
+        BodyStyle = WebMessageBodyStyle.Bare)]
+    string GetPosterBase64DataXML(string url);
+
+    #endregion
 }
